@@ -128,6 +128,21 @@ body::before {
   color: white;
   background: linear-gradient(90deg, #4ade80, #16a34a);
 }
+/* Make label.btn behave like a button */
+label.btn {
+  display: inline-block;
+  user-select: none;
+  text-align: center;
+  outline-offset: 2px;
+}
+
+/* Focus outline for accessibility on both buttons and label */
+label.btn:focus,
+.btn:focus {
+  outline: 2px solid #268636; /* nice green outline */
+  outline-offset: 3px;
+}
+
 
 .btn:hover {
   transform: scale(1.05);

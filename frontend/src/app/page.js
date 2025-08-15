@@ -94,9 +94,21 @@ export default function Home() {
             style={{ display: "none" }}
             id="image-upload"
           />
-          <label htmlFor="image-upload" className="btn">
-            Upload Image
-          </label>
+          <label
+  htmlFor="image-upload"
+  className="btn"
+  tabIndex={0}
+  role="button"
+  onKeyPress={(e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      document.getElementById('image-upload').click();
+    }
+  }}
+>
+  Upload Image
+</label>
+
 
           {!streaming && (
             <button className="btn" onClick={handleTakePhoto}>
