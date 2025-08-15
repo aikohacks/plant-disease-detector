@@ -16,7 +16,7 @@ body {
   font-family: 'Arial', sans-serif;
 
   /* Background image from public folder */
-  background-image: url('/bg.jpg'); /* public/images/bg.jpg */
+  background-image: url('/a.png'); /* public/images/bg.jpg */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
