@@ -1,20 +1,35 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import "../app/globals.css";
 
 export default function Home() {
   const [image, setImage] = useState(null);
   const [streaming, setStreaming] = useState(false);
+  const [loading, setLoading] = useState(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  // Handle file upload
+  useEffect(() => {
+    const revealSections = () => {
+      const sections = document.querySelectorAll(".section");
+      sections.forEach((section) => {
+        const rect = section.getBoundingClientRect();
+        if (rect.top < window.innerHeight - 100) {
+          section.classList.add("visible");
+        }
+      });
+    };
+
+    window.addEventListener("scroll", revealSections);
+    revealSections();
+    return () => window.removeEventListener("scroll", revealSections);
+  }, []);
+
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) setImage(URL.createObjectURL(file));
   };
 
-  // Start camera
   const handleTakePhoto = async () => {
     if (streaming) return;
     try {
@@ -27,7 +42,6 @@ export default function Home() {
     }
   };
 
-  // Capture photo from camera
   const handleCapture = () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -45,10 +59,13 @@ export default function Home() {
     setStreaming(false);
   };
 
-  // Scan image
   const handleScan = () => {
     if (!image) return alert("Please upload or take a photo first!");
-    alert("Scanning image... 🔍");
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      alert("✅ Image scanned successfully! (mock response)");
+    }, 2000);
   };
 
   return (
@@ -69,7 +86,6 @@ export default function Home() {
         <h1>Detect Plant Diseases Instantly</h1>
         <p>Upload an image or take a photo to know the health of your plant 🌿</p>
 
-        {/* Buttons */}
         <div className="buttons-container">
           <input
             type="file"
@@ -103,9 +119,10 @@ export default function Home() {
         {image && (
           <div className="image-preview">
             <img src={image} alt="Preview" />
-            <button className="btn scan-btn" onClick={handleScan}>
-              Scan Image
+            <button className="btn scan-btn" onClick={handleScan} disabled={loading}>
+              {loading ? "Scanning..." : "Scan Image"}
             </button>
+            {loading && <div className="spinner"></div>}
           </div>
         )}
 
@@ -130,3 +147,4 @@ export default function Home() {
     </div>
   );
 }
+
