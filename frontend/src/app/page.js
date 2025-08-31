@@ -1,72 +1,108 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef,useEffect } from "react";
 import "../app/globals.css";
 
-export default function Home() {
+export default function Home()
+ {useEffect(() => {
+  const sections = document.querySelectorAll(".section");
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible");
+        } else {
+          entry.target.classList.remove("visible");
+        }
+      });
+    },
+    { threshold: 0.2 }
+  );
+
+  sections.forEach((section) => observer.observe(section));
+
+  return () => {
+    sections.forEach((section) => observer.unobserve(section));
+  };
+}, []);
+
   const [image, setImage] = useState(null);
-  const [streaming, setStreaming] = useState(false);
+  const [preview, setPreview] = useState(null);
+  const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [streaming, setStreaming] = useState(false);
+
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  useEffect(() => {
-    const revealSections = () => {
-      const sections = document.querySelectorAll(".section");
-      sections.forEach((section) => {
-        const rect = section.getBoundingClientRect();
-        if (rect.top < window.innerHeight - 100) {
-          section.classList.add("visible");
-        }
-      });
-    };
-
-    window.addEventListener("scroll", revealSections);
-    revealSections();
-    return () => window.removeEventListener("scroll", revealSections);
-  }, []);
-
+  // Handle file upload
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (file) setImage(URL.createObjectURL(file));
+    if (file) {
+      setImage(file);
+      setPreview(URL.createObjectURL(file));
+    }
   };
 
+  // Start camera
   const handleTakePhoto = async () => {
-    if (streaming) return;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       videoRef.current.srcObject = stream;
       videoRef.current.play();
       setStreaming(true);
     } catch (err) {
-      alert("Unable to access camera: " + err.message);
+      console.error("Camera error:", err);
     }
   };
 
+  // Capture photo from camera
   const handleCapture = () => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const dataUrl = canvas.toDataURL("image/png");
-    setImage(dataUrl);
+    const context = canvasRef.current.getContext("2d");
+    canvasRef.current.width = videoRef.current.videoWidth;
+    canvasRef.current.height = videoRef.current.videoHeight;
+    context.drawImage(videoRef.current, 0, 0);
+    canvasRef.current.toBlob((blob) => {
+      const file = new File([blob], "photo.jpg", { type: "image/jpeg" });
+      setImage(file);
+      setPreview(URL.createObjectURL(file));
+      stopCamera();
+    });
+  };
 
-    const stream = video.srcObject;
-    const tracks = stream.getTracks();
-    tracks.forEach((track) => track.stop());
-    video.srcObject = null;
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
+    }
     setStreaming(false);
   };
 
-  const handleScan = () => {
-    if (!image) return alert("Please upload or take a photo first!");
-    setLoading(true);
-    setTimeout(() => {
+  // Send image to backend
+  const handleScan = async () => {
+    if (!image) {
+      alert("Please select or capture an image!");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", image);
+
+    try {
+      setLoading(true);
+      let res = await fetch("https://plant-disease-detectorrrr.onrender.com/predict", {
+        method: "POST",
+        body: formData,
+      });
+
+      let data = await res.json();
+      setResult(data);
+    } catch (err) {
+      console.error("Error:", err);
+    } finally {
       setLoading(false);
-      alert("✅ Image scanned successfully! (mock response)");
-    }, 2000);
+    }
   };
+  
 
   return (
     <div className="landing-page">
@@ -94,21 +130,9 @@ export default function Home() {
             style={{ display: "none" }}
             id="image-upload"
           />
-          <label
-  htmlFor="image-upload"
-  className="btn"
-  tabIndex={0}
-  role="button"
-  onKeyPress={(e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      document.getElementById('image-upload').click();
-    }
-  }}
->
-  Upload Image
-</label>
-
+          <label htmlFor="image-upload" className="btn" tabIndex={0} role="button">
+            Upload Image
+          </label>
 
           {!streaming && (
             <button className="btn" onClick={handleTakePhoto}>
@@ -128,13 +152,22 @@ export default function Home() {
         )}
 
         {/* Image Preview + Scan */}
-        {image && (
+        {preview && (
           <div className="image-preview">
-            <img src={image} alt="Preview" />
+            <img src={preview} alt="Preview" />
             <button className="btn scan-btn" onClick={handleScan} disabled={loading}>
               {loading ? "Scanning..." : "Scan Image"}
             </button>
             {loading && <div className="spinner"></div>}
+          </div>
+        )}
+
+        {/* Prediction Result */}
+        {result && (
+          <div className="result">
+            <h3>Prediction Result</h3>
+            <p><strong>Disease:</strong> {result.prediction}</p>
+            <p><strong>Confidence:</strong> {result.confidence}</p>
           </div>
         )}
 
@@ -159,4 +192,3 @@ export default function Home() {
     </div>
   );
 }
-

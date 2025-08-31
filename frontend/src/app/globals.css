@@ -92,6 +92,13 @@ body::before {
   color: #10b981;
   transform: scale(1.05);
 }
+.nav-links a.active {
+  color: #4caf50;
+  font-weight: bold;
+  border-bottom: 2px solid #4caf50;
+  transition: all 0.3s ease-in-out;
+}
+
 
 /* === Hero Section === */
 .hero {
@@ -262,5 +269,4 @@ label.btn:focus,
     width: 90%;
   }
 }
-
 
