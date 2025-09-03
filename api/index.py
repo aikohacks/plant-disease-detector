@@ -6,12 +6,9 @@ import numpy as np
 import io
 import os
 
-# Vercel expects the Flask app to be named 'app'
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
 
-# Construct the path to the model files relative to this file
-# The model files are in a 'model' subfolder within the 'api' directory
 MODEL_DIR = os.path.join(os.path.dirname(__file__), 'model')
 MODEL_PATH = os.path.join(MODEL_DIR, "plant_disease_model1.keras")
 CLASS_NAMES_PATH = os.path.join(MODEL_DIR, "class_names.npy")
@@ -25,11 +22,10 @@ except Exception as e:
     model = None
     class_names = []
 
-# This function will handle all requests that come to /api/ or /api/predict, etc.
-@app.route('/', defaults={'path': ''})
+# This single function will now handle GET and POST at the root
+@app.route('/', defaults={'path': ''}, methods=['GET', 'POST'])
 @app.route('/<path:path>', methods=['GET', 'POST'])
 def catch_all(path):
-    # We only care about POST requests for prediction
     if request.method == 'POST':
         if not model or not class_names.any():
             return jsonify({"error": "Model is not loaded"}), 500
@@ -59,7 +55,6 @@ def catch_all(path):
             print(f"Prediction error: {e}")
             return jsonify({"error": "Failed to process image"}), 500
     else:
-        # Handle any other request (like a simple GET) with a status message
         return jsonify({
             "status": "ok",
             "message": "Plant Disease Detector API is running."
