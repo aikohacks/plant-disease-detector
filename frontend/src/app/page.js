@@ -87,9 +87,9 @@ const handleScan = async () => {
 
   try {
     setLoading(true);
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    
 
-    let res = await fetch(`${apiUrl}/predict`, {
+    let res = await fetch(`/api`, {
       method: "POST",
       body: formData,
     });
