@@ -9,6 +9,7 @@ import os
 app = Flask(__name__)
 CORS(app)
 
+# --- Model Loading ---
 MODEL_DIR = os.path.join(os.path.dirname(__file__), 'model')
 MODEL_PATH = os.path.join(MODEL_DIR, "plant_disease_model1.keras")
 CLASS_NAMES_PATH = os.path.join(MODEL_DIR, "class_names.npy")
@@ -22,10 +23,14 @@ except Exception as e:
     model = None
     class_names = []
 
-# This single function will now handle GET and POST at the root
-@app.route('/', defaults={'path': ''}, methods=['GET', 'POST'])
-@app.route('/<path:path>', methods=['GET', 'POST'])
-def catch_all(path):
+# --- Single Route for All API Requests ---
+@app.route('/', methods=['GET', 'POST'])
+def handle_request():
+    # Handle a simple GET request for health checks
+    if request.method == 'GET':
+        return jsonify({"status": "ok", "message": "API is running."})
+
+    # Handle the POST request for prediction
     if request.method == 'POST':
         if not model or not class_names.any():
             return jsonify({"error": "Model is not loaded"}), 500
@@ -54,8 +59,3 @@ def catch_all(path):
         except Exception as e:
             print(f"Prediction error: {e}")
             return jsonify({"error": "Failed to process image"}), 500
-    else:
-        return jsonify({
-            "status": "ok",
-            "message": "Plant Disease Detector API is running."
-        })
