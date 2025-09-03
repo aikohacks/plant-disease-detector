@@ -89,12 +89,12 @@ const handleScan = async () => {
     setLoading(true);
     
 
-    let res = await fetch(`/api/predict`, {
+    const res = await fetch(`/api`, {
       method: "POST",
       body: formData,
     });
 
-    let data = await res.json();
+    const data = await res.json();
     setResult(data);
   } catch (err) {
     console.error("Error:", err);
