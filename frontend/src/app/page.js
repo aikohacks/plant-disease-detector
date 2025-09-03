@@ -76,33 +76,32 @@ export default function Home()
     }
     setStreaming(false);
   };
+const handleScan = async () => {
+  if (!image) {
+    alert("Please select or capture an image!");
+    return;
+  }
 
-  // Send image to backend
-  const handleScan = async () => {
-    if (!image) {
-      alert("Please select or capture an image!");
-      return;
-    }
+  const formData = new FormData();
+  formData.append("file", image);
 
-    const formData = new FormData();
-    formData.append("file", image);
+  try {
+    setLoading(true);
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-    try {
-      setLoading(true);
-      let res = await fetch("https://plant-disease-detectorrrr.onrender.com/predict", {
-        method: "POST",
-        body: formData,
-      });
+    let res = await fetch(`${apiUrl}/predict`, {
+      method: "POST",
+      body: formData,
+    });
 
-      let data = await res.json();
-      setResult(data);
-    } catch (err) {
-      console.error("Error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-  
+    let data = await res.json();
+    setResult(data);
+  } catch (err) {
+    console.error("Error:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="landing-page">
