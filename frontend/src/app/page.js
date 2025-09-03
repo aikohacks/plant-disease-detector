@@ -89,7 +89,7 @@ const handleScan = async () => {
     setLoading(true);
     
 
-    const res = await fetch(`/api/predict`, {
+    const res = await fetch(`/api`, {
       method: "POST",
       body: formData,
     });
