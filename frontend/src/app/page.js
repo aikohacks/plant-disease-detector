@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef,useEffect } from "react";
+import PieChart from "./PieChart";
 import "../app/globals.css";
 
 export default function Home()
@@ -89,7 +90,7 @@ const handleScan = async () => {
     setLoading(true);
     
 
-    const res = await fetch(`/api`, {
+    const res = await fetch(`/api/`, {
       method: "POST",
       body: formData,
     });
@@ -158,15 +159,23 @@ const handleScan = async () => {
               {loading ? "Scanning..." : "Scan Image"}
             </button>
             {loading && <div className="spinner"></div>}
-          </div>
-        )}
 
-        {/* Prediction Result */}
-        {result && (
-          <div className="result">
-            <h3>Prediction Result</h3>
-            <p><strong>Disease:</strong> {result.prediction}</p>
-            <p><strong>Confidence:</strong> {result.confidence}</p>
+            {/* Prediction Result */}
+            {result && (
+              <div className="result-card">
+                <h3 className="result-title">Prediction Result</h3>
+                <div className="result-content">
+                  <div className="result-disease">
+                    <strong>Predicted Disease:</strong>
+                    <span>{result.prediction}</span>
+                  </div>
+                  <div className="result-confidence">
+                    <strong>Confidence Score:</strong>
+                    <PieChart percentage={result.confidence} />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
